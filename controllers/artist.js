@@ -1,6 +1,6 @@
 'use strict'
 
-var path = require('path');//path y fs es para trabajar con el sistema de ficheros
+var path = require('path');
 var fs = require('fs');
 var mongoosePaginate = require('mongoose-pagination');
 
@@ -13,7 +13,7 @@ function getArtist(req, res){
 
 	Artist.findById(artistId, (err, artist) => {
 		if(err){
-			res.status(500).send({message: 'Error en la peticion'});
+			res.status(500).send({message: 'Error en la petición.'});
 		}else{
 			if(!artist){
 				res.status(404).send({message: 'El artista no existe'});
@@ -22,7 +22,34 @@ function getArtist(req, res){
 			}
 		}
 	});
+
 }
+
+function getArtists(req, res){
+	if(req.params.page){
+		var page = req.params.page;
+	}else{
+		var page = 1;
+	}
+
+	var itemsPerPage = 4;
+
+	Artist.find().sort('name').paginate(page, itemsPerPage, function(err, artists, total){
+		if(err){
+			res.status(500).send({message: 'Error en la petición.'});
+		}else{
+			if(!artists){
+				res.status(404).send({message: 'No hay artistas !!'});
+			}else{
+				return res.status(200).send({
+					total_items: total,
+					artists: artists
+				});
+			}
+		}
+	});
+}
+
 
 function saveArtist(req, res){
 	var artist = new Artist();
@@ -33,15 +60,11 @@ function saveArtist(req, res){
 	artist.image = 'null';
 
 	artist.save((err, artistStored) => {
-		/*esta funcion va  arecibir o el error o el artista que ha guardado
-		se hacen de flecha las funciones porque no se instancian, 
-		son locales y al no tener nombre
-		no se podran llamar desde otro sitio*/
 		if(err){
 			res.status(500).send({message: 'Error al guardar el artista'});
 		}else{
 			if(!artistStored){
-				res.status(404).send({message: 'El artista no ha sido guardado'});	
+				res.status(404).send({message: 'El artista no ha sido guardado'});
 			}else{
 				res.status(200).send({artist: artistStored});
 			}
@@ -49,29 +72,6 @@ function saveArtist(req, res){
 	});
 }
 
-function getArtists(req, res){
-	if(req.params.page){
-		var page = req.params.page;
-	}else{
-		var page = 1;
-	}
-	var itemsPerPage = 4;
-
-	Artist.find().sort('name').paginate(page, itemsPerPage, function(err, artists, total){
-		if(err){
-			res.status(500).send({message: 'Error en la paeticion'});
-		}else{
-			if(!artists){
-				res.status(400).send({message: 'No hay artistas'});
-			}else{
-				return res.status(200).send({
-					pages: total,
-					artists: artists
-				});
-			}
-		}
-	});
-}
 
 function updateArtist(req, res){
 	var artistId = req.params.id;
@@ -100,32 +100,29 @@ function deleteArtist(req, res){
 			if(!artistRemoved){
 				res.status(404).send({message: 'El artista no ha sido eliminado'});
 			}else{
-				console.log(artistRemoved);
-
-				Album.find({artist: artistRemoved._id}).remove((err, albumRemoved) =>{
+				Album.find({artist: artistRemoved._id}).remove((err, albumRemoved)=>{
 					if(err){
 						res.status(500).send({message: 'Error al eliminar el album'});
 					}else{
 						if(!albumRemoved){
 							res.status(404).send({message: 'El album no ha sido eliminado'});
 						}else{
-							console.log(albumRemoved);
 
-							Song.find({album: albumRemoved._id}).remove((err, songRemoved) =>{
+							Song.find({album: albumRemoved._id}).remove((err, songRemoved)=>{
 								if(err){
-									res.status(500).send({message: 'Error al eliminar la cancion'});
+									res.status(500).send({message: 'Error al eliminar la canción'});
 								}else{
 									if(!songRemoved){
-										res.status(404).send({message: 'La cancion no ha sido eliminada'});
+										res.status(404).send({message: 'La canción no ha sido eliminada'});
 									}else{
-										console.log(songRemoved);
-										res.status(200).send({artistRemoved});
+										res.status(200).send({artist: artistRemoved});
 									}
 								}
 							});
 						}
 					}
 				});
+
 			}
 		}
 	});
@@ -144,27 +141,27 @@ function uploadImage(req, res){
 		var file_ext = ext_split[1];
 
 		if(file_ext == 'png' || file_ext == 'jpg' || file_ext == 'gif'){
+
 			Artist.findByIdAndUpdate(artistId, {image: file_name}, (err, artistUpdated) => {
-				if(!artistUpdated){
-					res.status(404).send({message: 'No se ha podido actualizar el artista'});
+				if(!artistId){
+					res.status(404).send({message: 'No se ha podido actualizar el usuario'});
 				}else{
 					res.status(200).send({artist: artistUpdated});
 				}
 			});
+
 		}else{
-			res.status(500).send({message: 'Extension del archivo no valida'});
+			res.status(200).send({message: 'Extensión del archivo no valida'});
 		}
-		console.log(ext_split);
+		
 	}else{
 		res.status(200).send({message: 'No has subido ninguna imagen...'});
 	}
-
 }
 
 function getImageFile(req, res){
 	var imageFile = req.params.imageFile;
 	var path_file = './uploads/artists/'+imageFile;
-
 	fs.exists(path_file, function(exists){
 		if(exists){
 			res.sendFile(path.resolve(path_file));
@@ -173,6 +170,7 @@ function getImageFile(req, res){
 		}
 	});
 }
+
 
 module.exports = {
 	getArtist,

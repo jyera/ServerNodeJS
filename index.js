@@ -2,18 +2,16 @@
 
 var mongoose = require('mongoose');
 var app = require('./app');
-var port = process.env.PORT || 3977; //la primera opcion es por si lo tenemos configurado por variables de entorno y el otro es el que le ponemos nosotros fijo si no hay
-//sera el puerto de nuestro servidor backend de node
+var port = process.env.PORT || 3977;
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/curso_mean2', (err,res) => {
-	if (err) {
+mongoose.connect('mongodb://localhost:27017/curso_mean2', (err, res) => {
+	if(err){
 		throw err;
 	}else{
-		console.log("La bdd esta funcionando correctamente");
+		console.log("La conexión a la base de datos está funcionando correctamente...");
 
 		app.listen(port, function(){
-			console.log("Servidor del API REST escuchando en http://localhost:"+port);
+			console.log("Servidor del api rest de musica escuchando en http://localhost:"+port);
 		});
 	}
-})
+});

@@ -1,14 +1,14 @@
 'use strict'
-
 var fs = require('fs');
 var path = require('path');
 var bcrypt = require('bcrypt-nodejs');
 var User = require('../models/user');
 var jwt = require('../services/jwt');
 
+
 function pruebas(req, res){
 	res.status(200).send({
-		message: 'Probando una accion del controlador de usuarios del API REST con NODE y MONGO'
+		message: 'Probando una acción del controlador de usuarios del api rest con Node y Mongo'
 	});
 }
 
@@ -26,11 +26,12 @@ function saveUser(req, res){
 	user.image = 'null';
 
 	if(params.password){
-		//Encriptar pass y guardar datos
+		// Encriptar contraseña
 		bcrypt.hash(params.password, null, null, function(err, hash){
 			user.password = hash;
+
 			if(user.name != null && user.surname != null && user.email != null){
-				//Guardar Usuario
+				// Guardar el usuario
 				user.save((err, userStored) => {
 					if(err){
 						res.status(500).send({message: 'Error al guardar el usuario'});
@@ -42,34 +43,37 @@ function saveUser(req, res){
 						}
 					}
 				});
+
 			}else{
-				res.status(200).send({message: 'Introduce todos los campos'});		
+			    res.status(200).send({message: 'Rellena todos los campos'});
 			}
 		});
 	}else{
 		res.status(200).send({message: 'Introduce la contraseña'});
 	}
+
 }
 
 function loginUser(req, res){
-	var params = req.body;//lo podemos revcger gracias al bodyparser que nos lo da en formato JSON
+	var params = req.body;
 
 	var email = params.email;
 	var password = params.password;
 
 	User.findOne({email: email.toLowerCase()}, (err, user) => {
 		if(err){
-			res.status(500).send({message: 'Error en la peticion'});
+			res.status(500).send({message: 'Error en la petición'});
 		}else{
 			if(!user){
 				res.status(404).send({message: 'El usuario no existe'});
 			}else{
-				//Comprobar pass
+
+				// Comprobar la contraseña
 				bcrypt.compare(password, user.password, function(err, check){
 					if(check){
-						//devolver datos del usuario logueado
+						//devolver los datos del usuario logueado
 						if(params.gethash){
-							//devolver un token de JWT
+							// devolver un token de jwt
 							res.status(200).send({
 								token: jwt.createToken(user)
 							});
@@ -77,7 +81,7 @@ function loginUser(req, res){
 							res.status(200).send({user});
 						}
 					}else{
-						res.status(404).send({message: 'El usuario no ha podido loguearse'});
+						res.status(404).send({message: 'El usuario no ha podido loguease'});
 					}
 				});
 			}
@@ -86,16 +90,16 @@ function loginUser(req, res){
 }
 
 function updateUser(req, res){
-	var userId = req.params.id;//lo sacamos de la url
+	var userId = req.params.id;
 	var update = req.body;
 
 	if(userId != req.user.sub){
-		return res.status(500).send({message: 'No tienes permiso para actualizar este usuario'});
+	  return res.status(500).send({message: 'No tienes permiso para actualizar este usuario'});
 	}
 
 	User.findByIdAndUpdate(userId, update, (err, userUpdated) => {
 		if(err){
-			res.status(500).send({message: 'Error al aztualizar el usuario'});
+			res.status(500).send({message: 'Error al actualizar el usuario'});
 		}else{
 			if(!userUpdated){
 				res.status(404).send({message: 'No se ha podido actualizar el usuario'});
@@ -119,6 +123,7 @@ function uploadImage(req, res){
 		var file_ext = ext_split[1];
 
 		if(file_ext == 'png' || file_ext == 'jpg' || file_ext == 'gif'){
+
 			User.findByIdAndUpdate(userId, {image: file_name}, (err, userUpdated) => {
 				if(!userUpdated){
 					res.status(404).send({message: 'No se ha podido actualizar el usuario'});
@@ -126,20 +131,19 @@ function uploadImage(req, res){
 					res.status(200).send({image: file_name, user: userUpdated});
 				}
 			});
+
 		}else{
-			res.status(500).send({message: 'Extension del archivo no valida'});
+			res.status(200).send({message: 'Extensión del archivo no valida'});
 		}
-		console.log(ext_split);
+		
 	}else{
 		res.status(200).send({message: 'No has subido ninguna imagen...'});
 	}
-
 }
 
 function getImageFile(req, res){
 	var imageFile = req.params.imageFile;
 	var path_file = './uploads/users/'+imageFile;
-
 	fs.exists(path_file, function(exists){
 		if(exists){
 			res.sendFile(path.resolve(path_file));
@@ -148,6 +152,7 @@ function getImageFile(req, res){
 		}
 	});
 }
+
 
 module.exports = {
 	pruebas,

@@ -1,4 +1,5 @@
 'use strict'
+
 var jwt = require('jwt-simple');
 var moment = require('moment');
 var secret = 'clave_secreta_curso';
@@ -11,8 +12,8 @@ exports.createToken = function(user){
 		email: user.email,
 		role: user.role,
 		image: user.image,
-		iat: moment().unix(), //esto nos saca la fecha en formato unix tipo timestamp
-		exp: moment().add(30,'days').unix
+		iat: moment().unix(),
+		exp: moment().add(30, 'days').unix
 	};
 
 	return jwt.encode(payload, secret);

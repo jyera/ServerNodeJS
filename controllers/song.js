@@ -1,6 +1,6 @@
 'use strict'
 
-var path = require('path');//path y fs es para trabajar con el sistema de ficheros
+var path = require('path');
 var fs = require('fs');
 var mongoosePaginate = require('mongoose-pagination');
 
@@ -13,13 +13,13 @@ function getSong(req, res){
 
 	Song.findById(songId).populate({path: 'album'}).exec((err, song) => {
 		if(err){
-			res.status(500).send({message: 'Error en la peticion'});
+			res.status(500).send({message: 'Error en la petición'});
 		}else{
 			if(!song){
-				res.status(404).send({message: 'La cancion no existe'});
+				res.status(404).send({message: 'La canción no existe !!'});
 			}else{
 				res.status(200).send({song});
-			} 
+			}
 		}
 	});
 }
@@ -41,10 +41,10 @@ function getSongs(req, res){
 		}
 	}).exec(function(err, songs){
 		if(err){
-			res.status(500).send({message: 'Error en la peticion'});
+			res.status(500).send({message: 'Error en la petición'});
 		}else{
 			if(!songs){
-				res.status(404).send({message: 'No hay canciones'});
+				res.status(404).send({message: 'No hay canciones !!'});
 			}else{
 				res.status(200).send({songs});
 			}
@@ -57,17 +57,17 @@ function saveSong(req, res){
 
 	var params = req.body;
 	song.number = params.number;
-	song.name = params.name;
+	song.name  = params.name;
 	song.duration = params.duration;
-	song.file = 'null';
+	song.file = null;
 	song.album = params.album;
 
 	song.save((err, songStored) => {
-		if(err){	
+		if(err){
 			res.status(500).send({message: 'Error en el servidor'});
 		}else{
 			if(!songStored){
-				res.status(404).send({message: 'No se ha guardado la cancion'});
+				res.status(404).send({message: 'No se ha guardado la canción'});
 			}else{
 				res.status(200).send({song: songStored});
 			}
@@ -79,12 +79,12 @@ function updateSong(req, res){
 	var songId = req.params.id;
 	var update = req.body;
 
-	Song.findByIdAndUpdate(songId, update, (err, songUpdated) =>{
-		if(err){	
+	Song.findByIdAndUpdate(songId, update, (err, songUpdated) => {
+		if(err){
 			res.status(500).send({message: 'Error en el servidor'});
 		}else{
 			if(!songUpdated){
-				res.status(404).send({message: 'No se ha modificado la cancion'});
+				res.status(404).send({message: 'No se ha actualizado la canción'});
 			}else{
 				res.status(200).send({song: songUpdated});
 			}
@@ -94,18 +94,20 @@ function updateSong(req, res){
 
 function deleteSong(req, res){
 	var songId = req.params.id;
-	Song.findByIdAndRemove(songId, (err, songRemoved) =>{
-		if(err){	
+	
+	Song.findByIdAndRemove(songId, (err, songRemoved) => {
+		if(err){
 			res.status(500).send({message: 'Error en el servidor'});
 		}else{
 			if(!songRemoved){
-				res.status(404).send({message: 'No se ha borrado la cancion'});
+				res.status(404).send({message: 'No se ha borrado la canción'});
 			}else{
 				res.status(200).send({song: songRemoved});
 			}
 		}
 	});
 }
+
 
 function uploadFile(req, res){
 	var songId = req.params.id;
@@ -120,26 +122,27 @@ function uploadFile(req, res){
 		var file_ext = ext_split[1];
 
 		if(file_ext == 'mp3' || file_ext == 'ogg'){
+
 			Song.findByIdAndUpdate(songId, {file: file_name}, (err, songUpdated) => {
 				if(!songUpdated){
-					res.status(404).send({message: 'No se ha podido actualizar la cancion'});
+					res.status(404).send({message: 'No se ha podido actualizar la cación'});
 				}else{
-					res.status(200).send({album: songUpdated});
+					res.status(200).send({song: songUpdated});
 				}
 			});
-		}else{
-			res.status(500).send({message: 'Extension del archivo no valida'});
-		}
-	}else{
-		res.status(200).send({message: 'No has subido ninguna fichero...'});
-	}
 
+		}else{
+			res.status(200).send({message: 'Extensión del archivo no valida'});
+		}
+		
+	}else{
+		res.status(200).send({message: 'No has subido el fichero de audio...'});
+	}
 }
 
 function getSongFile(req, res){
 	var imageFile = req.params.songFile;
 	var path_file = './uploads/songs/'+imageFile;
-
 	fs.exists(path_file, function(exists){
 		if(exists){
 			res.sendFile(path.resolve(path_file));
@@ -149,10 +152,11 @@ function getSongFile(req, res){
 	});
 }
 
+
 module.exports = {
 	getSong,
-	saveSong,
 	getSongs,
+	saveSong,
 	updateSong,
 	deleteSong,
 	uploadFile,
